@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NRK POST - Etterarbeidsplan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f7fafc;
+            padding: 16px;
+            line-height: 1.6;
+            max-width: 960px;
+            margin: auto;
+            color: #333;
+        }
+
+        h1, h2 {
+            color: #333;
+            margin-bottom: 16px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            margin-bottom: 32px;
+            border-bottom: 1.6px solid #3498db;
+        }
+
+        .header .left-text {
+            font-size: 20.8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .header .middle-text {
+            font-size: 22.4px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .download-button, .slack-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 6.4px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12.8px;
+            margin-left: 12px;
+            transition: background-color 0.3s ease;
+        }
+
+        .download-button:hover, .slack-button:hover {
+            background-color: #2980b9;
+        }
+
+        .button-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .title-section {
+            margin-bottom: 16px;
+        }
+
+        .title-section input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14.4px;
+        }
+
+        .date-info {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 8px;
+        }
+
+        .date-info label {
+            font-size: 12.8px;
+            color: #333;
+        }
+
+        input[type="date"], input[type="number"], input[type="text"] {
+            width: 104px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-top: 4px;
+            font-size: 12.8px;
+        }
+
+        .summary {
+            margin-top: 16px;
+            font-size: 14.4px;
+            font-weight: bold;
+            color: #2c3e50;
+            display: flex;
+            justify-content: space-between;
+            background-color: #f7fafc;
+            padding: 16px;
+            border-radius: 6.4px;
+            border: 0.8px solid #ddd;
+        }
+
+        .summary input {
+            font-size: 14.4px;
+            font-weight: bold;
+            width: 120px;
+            border: 0.8px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+            margin-left: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 32px;
+        }
+
+        th, td {
+            border: 0.8px solid #ddd;
+            padding: 9.6px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #3498db;
+            color: white;
+        }
+
+        .editable-task {
+            background-color: #f7fafc;
+            color: #333;
+            padding: 6.4px;
+            border-radius: 4px;
+            width: 90%;
+            text-align: center;
+            border: 0.8px solid #ccc;
+            font-weight: bold;
+        }
+
+        .comment-cell input {
+            width: 90%;
+            padding: 6.4px;
+            border: 0.8px solid #ccc;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="left-text">NRK POST</div>
+        <div class="middle-text">KLIPPEPLAN</div>
+        <div class="button-container">
+            <a href="https://slack.com/" target="_blank">
+                <button class="slack-button">Slack</button>
+            </a>
+            <button class="download-button" id="download-pdf">Last ned PDF</button>
+            <button class="download-button" id="download-xls">Last ned XLS</button>
+        </div>
+    </div>
+
+    <div class="title-section">
+        <input type="text" id="tv-title" placeholder="Skriv inn tittel på serien">
+    </div>
+
+    <div class="date-info">
+        <label for="clip-start"><span id="cutter1-label">Oppstart klipper 1</span>:</label>
+        <input type="date" id="clip-start" value="2024-10-21" class="small-input">
+        <label for="clip-end"><span id="cutter2-label">Oppstart klipper 2</span>:</label>
+        <input type="date" id="clip-end" value="2025-01-31" class="small-input">
+        <label for="clip-start-3"><span id="cutter3-label">Oppstart klipper 3</span>:</label>
+        <input type="date" id="clip-start-3" value="2025-02-01" class="small-input">
+    </div>
+
+    <div class="date-info">
+        <label for="episodes">Ant. eps:</label>
+        <input type="number" id="episodes" value="8" min="1" max="100" class="small-input">
+
+        <label for="episode-length">Eps. lengde (min):</label>
+        <input type="number" id="episode-length" value="20" min="1" class="small-input">
+
+        <label for="hours-per-day">TIM:</label>
+        <input type="number" id="hours-per-day" value="7.5" min="1" step="0.1" class="small-input">
+    </div>
+
+    <div class="date-info">
+        <div>
+            <label for="cutter1-name">Klipper 1:</label>
+            <input type="text" id="cutter1-name" value="Klipper 1">
+        </div>
+        <div>
+            <label for="cutter1-episodes">Antall episoder Klipper 1:</label>
+            <input type="number" id="cutter1-episodes" value="4" min="0" class="small-input">
+        </div>
+    </div>
+
+    <div class="date-info">
+        <div>
+            <label for="cutter2-name">Klipper 2:</label>
+            <input type="text" id="cutter2-name" value="Klipper 2">
+        </div>
+        <div>
+            <label for="cutter2-episodes">Antall episoder Klipper 2:</label>
+            <input type="number" id="cutter2-episodes" value="4" min="0" class="small-input">
+        </div>
+    </div>
+
+    <div class="date-info">
+        <div>
+            <label for="cutter3-name">Klipper 3:</label>
+            <input type="text" id="cutter3-name" value="Klipper 3">
+        </div>
+        <div>
+            <label for="cutter3-episodes">Antall episoder Klipper 3:</label>
+            <input type="number" id="cutter3-episodes" value="0" min="0" class="small-input">
+        </div>
+    </div>
+
+    <div class="summary">
+        <div>Ant.vakter: <input type="number" id="total-shifts" value="0" readonly></div>
+        <div>Vakter pr eps: <input type="text" id="shifts-per-episode" value="0" readonly></div>
+        <div>Kalkyle: <input type="text" id="total-cost" value="0" readonly> NOK</div>
+    </div>
+
+    <div class="function-section" id="cutter-section-1">
+        <div class="function-heading" id="cutter1-heading">Klipper 1</div>
+        <table id="cutter-table-1">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">Uke</th>
+                    <th style="width: 15%;">Navn</th>
+                    <th style="width: 10%;">Episode</th>
+                    <th style="width: 20%;">Oppstart</th>
+                    <th style="width: 20%;">Sluttdato</th>
+                    <th style="width: 25%;">Kommentar</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="function-section" id="cutter-section-2">
+        <div class="function-heading" id="cutter2-heading">Klipper 2</div>
+        <table id="cutter-table-2">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">Uke</th>
+                    <th style="width: 15%;">Navn</th>
+                    <th style="width: 10%;">Episode</th>
+                    <th style="width: 20%;">Oppstart</th>
+                    <th style="width: 20%;">Sluttdato</th>
+                    <th style="width: 25%;" class="comment-cell">Kommentar</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div class="function-section" id="cutter-section-3">
+        <div class="function-heading" id="cutter3-heading">Klipper 3</div>
+        <table id="cutter-table-3">
+            <thead>
+                <tr>
+                    <th style="width: 10%;">Uke</th>
+                    <th style="width: 15%;">Navn</th>
+                    <th style="width: 10%;">Episode</th>
+                    <th style="width: 20%;">Oppstart</th>
+                    <th style="width: 20%;">Sluttdato</th>
+                    <th style="width: 25%;" class="comment-cell">Kommentar</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <button id="download-pdf-bottom" class="download-button">Last ned PDF</button>
+
+    <!-- SheetJS Library for XLSX support -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+    <script>
+        const episodeData = {};
+
+        // Funksjon for å samle tabellens data og eksportere til XLS
+        function downloadXLS() {
+            const tempTable = document.createElement('table');
+
+            // Kopier tabell 1
+            copyTableWithInputs('#cutter-table-1', tempTable);
+            const ws1 = XLSX.utils.table_to_sheet(tempTable);
+
+            // Rens midlertidig tabell for neste
+            tempTable.innerHTML = '';
+
+            // Kopier tabell 2
+            copyTableWithInputs('#cutter-table-2', tempTable);
+            const ws2 = XLSX.utils.table_to_sheet(tempTable);
+
+            tempTable.innerHTML = '';
+
+            // Kopier tabell 3
+            copyTableWithInputs('#cutter-table-3', tempTable);
+            const ws3 = XLSX.utils.table_to_sheet(tempTable);
+
+            // Opprett en ny arbeidsbok
+            const wb = XLSX.utils.book_new();
+            
+            // Legg til arkene i arbeidsboken
+            XLSX.utils.book_append_sheet(wb, ws1, "Klipper 1");
+            XLSX.utils.book_append_sheet(wb, ws2, "Klipper 2");
+            XLSX.utils.book_append_sheet(wb, ws3, "Klipper 3");
+
+            // Last ned arbeidsboken som XLSX-fil
+            XLSX.writeFile(wb, "Klippeplan.xlsx");
+        }
+
+        function copyTableWithInputs(tableSelector, tempTable) {
+            const table = document.querySelector(tableSelector);
+            const clonedTable = table.cloneNode(true);  // Kopier tabellstrukturen
+
+            // Gå gjennom alle input-feltene i den klonede tabellen og erstatt dem med deres verdier
+            clonedTable.querySelectorAll('input').forEach(input => {
+                const td = input.parentElement;  // Hent forelder-<td> som inneholder input-feltet
+                td.textContent = input.value;    // Erstatt input-elementet med verdien
+            });
+
+            // Legg til den oppdaterte tabellen i tempTable
+            tempTable.innerHTML = clonedTable.innerHTML;
+        }
+
+        document.getElementById("download-xls").addEventListener("click", downloadXLS);
+
+        // Funksjoner for utregninger og planlegging av episoder
+        const hourlyRate = 700;
+
+        function adjustEpisodes() {
+            const totalEpisodes = parseInt(document.getElementById("episodes").value);
+            const cutter1Episodes = parseInt(document.getElementById("cutter1-episodes").value);
+            const cutter2Episodes = parseInt(document.getElementById("cutter2-episodes").value);
+            const cutter3Episodes = parseInt(document.getElementById("cutter3-episodes").value);
+
+            const totalAllocatedEpisodes = cutter1Episodes + cutter2Episodes + cutter3Episodes;
+
+            if (totalAllocatedEpisodes > totalEpisodes) {
+                alert("Summen av episodene for Klipper 1, 2 og 3 kan ikke overstige totalt antall episoder.");
+                const maxForCutter3 = totalEpisodes - cutter1Episodes - cutter2Episodes;
+                document.getElementById("cutter3-episodes").value = Math.max(0, maxForCutter3);
+            } else if (totalAllocatedEpisodes < totalEpisodes) {
+                const remainingEpisodes = totalEpisodes - totalAllocatedEpisodes;
+                document.getElementById("cutter3-episodes").value = cutter3Episodes + remainingEpisodes;
+            }
+
+            updateClipPeriod();
+        }
+
+        function updateClipPeriod() {
+            const startDate1 = new Date(document.getElementById("clip-start").value);
+            const startDate2 = new Date(document.getElementById("clip-end").value);
+            const startDate3 = new Date(document.getElementById("clip-start-3").value);
+            const episodeLength = parseFloat(document.getElementById("episode-length").value);
+            const hoursPerDay = parseFloat(document.getElementById("hours-per-day").value);
+
+            const cutter1Episodes = parseInt(document.getElementById("cutter1-episodes").value);
+            const cutter2Episodes = parseInt(document.getElementById("cutter2-episodes").value);
+            const cutter3Episodes = parseInt(document.getElementById("cutter3-episodes").value);
+
+            generateClipPlan(startDate1, startDate2, startDate3, cutter1Episodes, cutter2Episodes, cutter3Episodes, episodeLength, hoursPerDay);
+        }
+
+        function generateClipPlan(startDate1, startDate2, startDate3, cutter1Episodes, cutter2Episodes, cutter3Episodes, episodeLength, hoursPerDay) {
+            clearTable('#cutter-table-1');
+            clearTable('#cutter-table-2');
+            clearTable('#cutter-table-3');
+
+            const shiftsPerEpisode = episodeLength / (7.5 / hoursPerDay); 
+            let totalShiftsUsed = 0;
+
+            let currentStartDate1 = new Date(startDate1);
+            let currentStartDate2 = new Date(startDate2);
+            let currentStartDate3 = new Date(startDate3);
+
+            for (let i = 1; i <= cutter1Episodes; i++) {
+                const cutterEndDate = addWorkdays(currentStartDate1, shiftsPerEpisode);
+                addRow('#cutter-table-1', document.getElementById("cutter1-name").value, i, currentStartDate1, getWeekNumber(currentStartDate1), cutterEndDate);
+                currentStartDate1 = addWorkdays(cutterEndDate, 1);
+                totalShiftsUsed += shiftsPerEpisode;
+            }
+
+            for (let i = 1; i <= cutter2Episodes; i++) {
+                const cutterEndDate = addWorkdays(currentStartDate2, shiftsPerEpisode);
+                addRow('#cutter-table-2', document.getElementById("cutter2-name").value, i + cutter1Episodes, currentStartDate2, getWeekNumber(currentStartDate2), cutterEndDate);
+                currentStartDate2 = addWorkdays(cutterEndDate, 1);
+                totalShiftsUsed += shiftsPerEpisode;
+            }
+
+            for (let i = 1; i <= cutter3Episodes; i++) {
+                const cutterEndDate = addWorkdays(currentStartDate3, shiftsPerEpisode);
+                addRow('#cutter-table-3', document.getElementById("cutter3-name").value, i + cutter1Episodes + cutter2Episodes, currentStartDate3, getWeekNumber(currentStartDate3), cutterEndDate);
+                currentStartDate3 = addWorkdays(cutterEndDate, 1);
+                totalShiftsUsed += shiftsPerEpisode;
+            }
+
+            updateTotalShiftsAndCost(totalShiftsUsed);
+        }
+
+        function updateTotalShiftsAndCost(totalShiftsUsed) {
+            const totalShifts = Math.floor(totalShiftsUsed);
+            document.getElementById("total-shifts").value = totalShifts;
+
+            const totalEpisodes = parseInt(document.getElementById("episodes").value);
+            const shiftsPerEpisode = totalEpisodes > 0 ? (totalShiftsUsed / totalEpisodes).toFixed(2) : 0;
+            document.getElementById("shifts-per-episode").value = shiftsPerEpisode;
+
+            const totalCost = totalShifts * hourlyRate * 7.5;
+            document.getElementById("total-cost").value = totalCost.toLocaleString('no-NO', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' NOK';
+        }
+
+        function clearTable(tableSelector) {
+            const tableBody = document.querySelector(`${tableSelector} tbody`);
+            tableBody.innerHTML = '';
+        }
+
+        function addWorkdays(startDate, days) {
+            let resultDate = new Date(startDate);
+            let addedDays = 0;
+
+            if (resultDate.getDay() !== 0 && resultDate.getDay() !== 6 && !isHoliday(resultDate)) {
+                addedDays++;
+            }
+
+            while (addedDays < days) {
+                resultDate.setDate(resultDate.getDate() + 1);
+                const dayOfWeek = resultDate.getDay();
+                if (dayOfWeek !== 0 && dayOfWeek !== 6 && !isHoliday(resultDate)) {
+                    addedDays++;
+                }
+            }
+
+            return resultDate;
+        }
+
+        function isHoliday(date) {
+            const holidayStart = new Date('2024-12-21');
+            const holidayEnd = new Date('2025-01-01');
+            return date >= holidayStart && date <= holidayEnd;
+        }
+
+        function getWeekNumber(d) {
+            d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil(((d - yearStart) / 86400000 + 1) / 7);
+        }
+
+        function addRow(tableSelector, task, episode, startDate, week, endDate) {
+            const tableBody = document.querySelector(`${tableSelector} tbody`);
+            const row = document.createElement('tr');
+
+            const weekCell = document.createElement('td');
+            const taskCell = document.createElement('td');
+            const episodeCell = document.createElement('td');
+            const startCell = document.createElement('td');
+            const endCell = document.createElement('td');
+            const commentCell = document.createElement('td');
+            commentCell.classList.add('comment-cell');
+
+            const weekCellId = `${tableSelector}-week-${episode}`;
+            weekCell.setAttribute('id', weekCellId);
+            weekCell.textContent = `Uke ${week}`;
+            
+            taskCell.innerHTML = `<input type="text" class="editable-task" value="${task}" style="width: 90%;">`;
+            episodeCell.innerHTML = `<input type="number" value="${episode}" style="width: 50px;">`;
+            startCell.innerHTML = `<input type="date" value="${formatDateForInput(startDate)}" onchange="updateWeekNumber(this, '${weekCellId}')">`;
+            endCell.innerHTML = `<input type="date" value="${formatDateForInput(endDate)}">`;
+
+            const episodeKey = `${tableSelector}-${episode}`;
+            const savedComment = episodeData[episodeKey]?.comment || '';
+            commentCell.innerHTML = `<input type="text" placeholder="Skriv kommentar" style="width: 90%;" value="${savedComment}" onchange="saveComment('${tableSelector}', ${episode}, this.value)">`;
+
+            row.appendChild(weekCell);
+            row.appendChild(taskCell);
+            row.appendChild(episodeCell);
+            row.appendChild(startCell);
+            row.appendChild(endCell);
+            row.appendChild(commentCell);
+            tableBody.appendChild(row);
+        }
+
+        function saveComment(tableSelector, episode, comment) {
+            const episodeKey = `${tableSelector}-${episode}`;
+            if (!episodeData[episodeKey]) {
+                episodeData[episodeKey] = {};
+            }
+            episodeData[episodeKey].comment = comment;
+        }
+
+        function formatDateForInput(date) {
+            const year = date.getFullYear();
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function updateWeekNumber(dateInput, weekCellId) {
+            const date = new Date(dateInput.value);
+            const weekNumber = getWeekNumber(date);
+            document.getElementById(weekCellId).textContent = `Uke ${weekNumber}`;
+        }
+
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.3/html2pdf.bundle.min.js"></script>
+
+</body>
+</html>
